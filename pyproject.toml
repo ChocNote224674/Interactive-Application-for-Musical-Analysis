@@ -1,0 +1,30 @@
+[project]
+name = "interactive-application-for-musical-analysis"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "ChocNote224674",email = "abdelhedi.youssef8@gmil.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "streamlit (>=1.41.1,<2.0.0)",
+    "matplotlib (>=3.10.0,<4.0.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "numpy (>=2.2.2,<3.0.0)",
+    "streamlit-elements (==0.1.*)",
+    "plotly (>=5.24.1,<6.0.0)",
+    "ipywidgets (>=8.1.5,<9.0.0)",
+    "scikit-learn (>=1.6.1,<2.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "interactive_application_for_musical_analysis", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
