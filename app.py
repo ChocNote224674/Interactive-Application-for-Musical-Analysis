@@ -5,6 +5,7 @@ from interactive_application_for_musical_analysis.app_ops import (
     apply_kmeans, plot_clusters, plot_cluster_genres, add_new_data, search_csv
 )
 import numpy as np 
+import anthropic
 
 # Chargement des données CSV
 df = load_data("data/dataset.csv")
@@ -151,6 +152,7 @@ with tabs[1]:
 
     # Nouvelle visualisation : Afficher les genres par cluster
     st.subheader("📂 Genres par Cluster")
+    st.write("En fonction du nombre de clusters choisi ci-dessous, voici les genres présents dans chaque cluster")
     fig_cluster_genres = plot_cluster_genres(genre_metrics)
     st.plotly_chart(fig_cluster_genres)
 
@@ -191,22 +193,57 @@ with tabs[2]:
 # Onglet ChatBot
 with tabs[3]:
     st.title("💬 ChatBot")
-    api_key = st.text_input("Enter your Claude API key:", type="password")
 
-    if st.button("Submit"):
-        if api_key:
-            # Stocker la clé API dans la session
-            st.session_state['claude_api_key'] = api_key
-            st.success("API key successfully saved!")
-        else:
-            st.error("Please enter a valid API key.")
+    # Stocker la clé API de Claude dans la session
+    if "claude_api_key" not in st.session_state:
+        api_key = st.text_input("Entrez votre clé API Claude :", type="password")
+        if st.button("Enregistrer la clé API"):
+            if api_key:
+                st.session_state["claude_api_key"] = api_key
+                st.success("Clé API enregistrée avec succès !")
+            else:
+                st.error("Veuillez saisir une clé API valide.")
+    else:
+        st.info("Clé API déjà enregistrée.")
 
-    query = st.text_input("Entrez votre question ici :")
-    
-    if query:
-        results = search_csv(query, df)
+    # Initialiser l'historique de conversation s'il n'existe pas
+    if "chat_history" not in st.session_state:
+        st.session_state["chat_history"] = ""
+
+    st.markdown("### Historique de la conversation")
+    st.text_area("Conversation", value=st.session_state["chat_history"], height=300, disabled=True)
+
+    # Saisie de la question utilisateur
+    user_query = st.text_input("Entrez votre question ici :")
+    if st.button("Envoyer") and user_query:
+        # Recherche dans le CSV pour obtenir des informations pertinentes
+        results = search_csv(user_query, df)
+        context_info = ""
         if results:
-            st.write("Résultats trouvés :")
-            st.json(results)
-        else:
-            st.write("Aucun résultat trouvé.")
+            context_info = "Voici des informations pertinentes extraites des données CSV :\n"
+            for r in results:
+                context_info += f"- {r}\n"
+        
+        # Préparer la requête complète avec le contexte éventuel
+        full_query = context_info + "\n" + user_query
+
+        # Construire le prompt en incluant l'historique de conversation
+        prompt = st.session_state["chat_history"] + f"{HUMAN_PROMPT} {full_query}\n{AI_PROMPT}"
+        
+        try:
+            client = anthropic.Client(st.session_state["claude_api_key"])
+            response = client.completion(
+                prompt=prompt,
+                model="claude-v1",
+                max_tokens_to_sample=300,
+                stop_sequences=[HUMAN_PROMPT]
+            )
+            answer = response.completion.strip()
+
+            # Mettre à jour l'historique de conversation
+            st.session_state["chat_history"] += f"{HUMAN_PROMPT} {full_query}\n{AI_PROMPT} {answer}\n"
+
+            st.markdown("### Réponse de Claude")
+            st.write(answer)
+        except Exception as e:
+            st.error(f"Erreur lors de l'appel à l'API Claude : {e}")
