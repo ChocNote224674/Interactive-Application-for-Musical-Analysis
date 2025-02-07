@@ -1,5 +1,10 @@
 # 🎵 MusicMax - Optimisation des Ventes Musicales avec IA
 
+
+## URL du projet déployé sur Streamlit
+
+URL Streamlit : https://interactive-application-for-musical-analysis-ztfwxe3srmsb3cdkm.streamlit.app/
+
 ## 📌 Description
 MusicMax est une application interactive conçue pour aider les producteurs musicaux à maximiser leurs ventes en exploitant l’analyse de données et l’intelligence artificielle.
 
@@ -34,15 +39,17 @@ L’application permet :
    streamlit run app.py
 
 ## Structure du Projet
-```bash
-MusicMax/
-│── data/           # Dossier contenant le dataset CSV
-│── dist/           # Dossier de distribution (paquets compilés)
-│── src/            # Code source principal
-│── tests/          # Tests unitaires et d'intégration
-│── app.py          # Script principal Streamlit
-│── poetry.lock     # Verrouillage des dépendances
-│── pyproject.toml  # Configuration de Poetry
+   ```bash
+   MusicMax/
+   │── data/           # Dossier contenant le dataset CSV
+   │── dist/           # Dossier de distribution (paquets compilés)
+   │── src/            # Code source principal
+   │── tests/          # Tests unitaires et d'intégration
+   │── app.py          # Script principal Streamlit
+   │── poetry.lock     # Verrouillage des dépendances
+   │── pyproject.toml  # Configuration de Poetry ```
+
+
 
 
 
