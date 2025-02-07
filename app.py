@@ -1,7 +1,11 @@
 import streamlit as st
 import pandas as pd
-from interactive_application_for_musical_analysis.app_ops import load_data, normalize_data, calculate_genre_metrics, plot_genre_metrics, apply_kmeans, plot_clusters, add_new_data, search_csv
+from interactive_application_for_musical_analysis.app_ops import (
+    load_data, normalize_data, calculate_genre_metrics, plot_genre_metrics,
+    apply_kmeans, plot_clusters, plot_cluster_genres, add_new_data, search_csv
+)
 import numpy as np 
+
 # Chargement des données CSV
 df = load_data("data/dataset.csv")
 
@@ -33,7 +37,7 @@ st.markdown(
     /* Personnaliser les titres */
     h1 {
         font-family: 'Arial', sans-serif;
-        font-size: 3.5em; /* Plus grand pour le titre principal */
+        font-size: 3.5em;
         color: #2E3B55;
         text-transform: uppercase;
         font-weight: bold;
@@ -42,7 +46,7 @@ st.markdown(
 
     h2 {
         font-family: 'Arial', sans-serif;
-        font-size: 2.5em; /* Taille augmentée pour les sous-titres */
+        font-size: 2.5em;
         color: #4A6FA5;
         margin-bottom: 0.3em;
     }
@@ -56,7 +60,7 @@ st.markdown(
 
     /* Ajuster la taille et l'espacement du contenu */
     p, .markdown-text-container {
-        font-size: 1.5em; /* Texte principal agrandi */
+        font-size: 1.5em;
         line-height: 1.8em;
         color: #555555;
     }
@@ -64,7 +68,7 @@ st.markdown(
     /* Styliser les onglets */
     div[role="tablist"] {
         justify-content: center;
-        font-size: 1.5em; /* Taille augmentée pour les onglets */
+        font-size: 1.5em;
         font-weight: bold;
         color: #333333;
     }
@@ -112,7 +116,7 @@ with tabs[1]:
     num_genres = st.slider(
         "Sélectionner le nombre de genres à afficher",
         min_value=10,
-        max_value=top_genres.shape[0],
+        max_value=int(top_genres.shape[0]),
         value=10,
         step=5
     )
@@ -142,8 +146,13 @@ with tabs[1]:
     genre_metrics = apply_kmeans(genre_metrics, n_clusters)
 
     # Visualisation des clusters
-    fig = plot_clusters(genre_metrics)
-    st.plotly_chart(fig)
+    fig_clusters = plot_clusters(genre_metrics)
+    st.plotly_chart(fig_clusters)
+
+    # Nouvelle visualisation : Afficher les genres par cluster
+    st.subheader("📂 Genres par Cluster")
+    fig_cluster_genres = plot_cluster_genres(genre_metrics)
+    st.plotly_chart(fig_cluster_genres)
 
 # Onglet Ajouter des Informations
 with tabs[2]:
@@ -177,10 +186,21 @@ with tabs[2]:
     if st.button("Ajouter"):
         df = add_new_data(df, new_data)
         st.success("Les informations ont été ajoutées avec succès !")
+        df.to_csv("data/dataset.csv")
 
 # Onglet ChatBot
 with tabs[3]:
     st.title("💬 ChatBot")
+    api_key = st.text_input("Enter your Claude API key:", type="password")
+
+    if st.button("Submit"):
+        if api_key:
+            # Stocker la clé API dans la session
+            st.session_state['claude_api_key'] = api_key
+            st.success("API key successfully saved!")
+        else:
+            st.error("Please enter a valid API key.")
+
     query = st.text_input("Entrez votre question ici :")
     
     if query:

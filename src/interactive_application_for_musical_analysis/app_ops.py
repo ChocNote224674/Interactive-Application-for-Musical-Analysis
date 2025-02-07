@@ -26,9 +26,13 @@ def calculate_genre_metrics(df):
     }).reset_index()
     return genre_metrics
 
-# Fonction pour générer un graphique des métriques par genre
+# Générer un graphique des métriques par genre
 def plot_genre_metrics(genre, genre_metrics):
-    genre_data = genre_metrics[genre_metrics['track_genre'] == genre].melt(id_vars='track_genre', var_name='Métriques', value_name='Valeur')
+    genre_data = genre_metrics[genre_metrics['track_genre'] == genre].melt(
+        id_vars='track_genre', 
+        var_name='Métriques', 
+        value_name='Valeur'
+    )
     fig = px.bar(
         genre_data,
         x='Métriques',
@@ -46,7 +50,7 @@ def apply_kmeans(genre_metrics, n_clusters):
     genre_metrics['cluster'] = kmeans.fit_predict(genre_metrics.drop(columns=['track_genre']))
     return genre_metrics
 
-# Fonction pour générer un graphique des clusters
+# Visualiser la distribution des clusters (taille proportionnelle au nombre de genres)
 def plot_clusters(genre_metrics):
     cluster_sizes = genre_metrics['cluster'].value_counts().reset_index()
     cluster_sizes.columns = ['Cluster', 'Taille']
@@ -63,7 +67,22 @@ def plot_clusters(genre_metrics):
     fig.update_yaxes(visible=False)
     return fig
 
-# Fonction pour ajouter des données dans le DataFrame
+# Nouvelle fonction : Visualiser pour chaque cluster les genres qui le composent via un treemap
+def plot_cluster_genres(genre_metrics):
+    # On ajoute une colonne de comptage (chaque genre compte pour 1)
+    df_temp = genre_metrics.copy()
+    df_temp['count'] = 1
+    fig = px.treemap(
+        df_temp,
+        path=['cluster', 'track_genre'],
+        values='count',
+        color='cluster',
+        title="Genres musicaux par Cluster",
+        color_continuous_scale='RdBu'
+    )
+    return fig
+
+# Ajouter des données dans le DataFrame
 def add_new_data(df, new_data):
     new_row = pd.DataFrame([new_data])
     df = pd.concat([df, new_row], ignore_index=True)
